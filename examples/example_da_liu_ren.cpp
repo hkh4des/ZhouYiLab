@@ -20,7 +20,7 @@ int main() {
         fmt::print("【示例1】阳历起课\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
         fmt::print("起课时间：2025年6月15日 14时\n\n");
-        auto result1 = DaLiuRenController::pai_pan_solar(2025, 6, 15, 14);
+        auto result1 = DaLiuRenController::pai_pan_solar(2025, 11, 3, 16);
         DaLiuRenController::display_result(result1);
         fmt::print("\n");
 
@@ -42,13 +42,13 @@ int main() {
         // 示例4：查看四课和三传
         fmt::print("【示例4】查看四课和三传\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        auto result4 = DaLiuRenController::pai_pan_solar(2025, 6, 15, 14);
+        auto result4 = DaLiuRenController::pai_pan_solar(2025, 11, 3, 16);
         DaLiuRenController::display_si_ke(result4.si_ke);
         fmt::print("\n");
         DaLiuRenController::display_san_chuan(result4.san_chuan, result4.ba_zi.day.gan, result4.ba_zi.day.zhi);
         fmt::print("\n");
 
-    } catch (const exception& e) {
+    } catch (const std::exception& e) {
         fmt::print("❌ 错误：{}\n", e.what());
         return 1;
     }
@@ -56,4 +56,3 @@ int main() {
     fmt::print("✅ 大六壬系统示例演示完成！\n\n");
     return 0;
 }
-
