@@ -19,9 +19,9 @@ int main() {
 
     try {
         // 示例1：排盘并显示完整八字信息
-        fmt::print("【示例1】公历排盘：1990年5月20日14时（男）\n");
+        fmt::print("【示例1】农历排盘：2000年6月15日16时（男）\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        auto result = pai_pan_solar(1990, 5, 20, 14, 0, true);
+        auto result = pai_pan_lunar(2000 , 6, 15, 16, 30, true);
         display_result(result);
         fmt::print("\n");
 
@@ -65,10 +65,10 @@ int main() {
         // 示例6：查看流月信息
         fmt::print("【示例6】2024年流月信息\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        display_liu_yue(result, 2024);
+        display_liu_yue(result, 2025);
         fmt::print("\n");
 
-    } catch (const exception& e) {
+    } catch (const std::exception& e) {
         fmt::print("❌ 错误：{}\n", e.what());
         return 1;
     }

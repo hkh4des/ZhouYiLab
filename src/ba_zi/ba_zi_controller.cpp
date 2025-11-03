@@ -10,6 +10,7 @@ import fmt;
 import ZhouYi.BaZiBase;
 import ZhouYi.BaZi;
 import ZhouYi.GanZhi;
+import ZhouYi.tyme;
 import std;
 
 namespace ZhouYi::BaZiController {
@@ -37,8 +38,16 @@ BaZiResult pai_pan_lunar(int year, int month, int day, int hour,
     // 创建八字
     auto bazi = BaZi::from_lunar(year, month, day, hour, minute);
     
-    // 注意：这里使用农历年份，实际应用中可能需要转换为公历
-    return BaZiResult(bazi, is_male, year, month, day, hour, minute, 0);
+    // 将农历转换为公历以获取正确的公历年份
+    auto lunar_hour = tyme::LunarHour::from_ymd_hms(year, month, day, hour, minute, 0);
+    auto solar_time = lunar_hour.get_solar_time();
+    
+    // 使用公历日期创建结果
+    return BaZiResult(bazi, is_male, 
+                     solar_time.get_year(), 
+                     solar_time.get_month(), 
+                     solar_time.get_day(), 
+                     hour, minute, 0);
 }
 
 /**
@@ -112,14 +121,16 @@ void display_da_yun(const BaZiResult& result, int max_count) {
     const auto& da_yun_list = result.da_yun_system.get_da_yun_list();
     int count = std::min(max_count, static_cast<int>(da_yun_list.size()));
     
-    fmt::println("{:<12} {:<8} {:<8} {:<8}", "干支", "年龄", "天干十神", "地支十神");
-    fmt::println("{:-<48}", "");
+    fmt::println("{:<12} {:<14} {:<14} {:<8} {:<8}", 
+                 "干支", "年龄", "年份", "天干十神", "地支十神");
+    fmt::println("{:-<68}", "");
     
     for (int i = 0; i < count; ++i) {
         const auto& dy = da_yun_list[i];
-        fmt::println("{:<12} {}-{:>2}岁 {:<8} {:<8}",
+        fmt::println("{:<12} {}-{:>2}岁      {}-{}年 {:<8} {:<8}",
                      dy.pillar.to_string(),
                      dy.start_age, dy.end_age,
+                     dy.start_year, dy.end_year,
                      shi_shen_to_zh(dy.gan_shi_shen),
                      shi_shen_to_zh(dy.zhi_shi_shen));
     }
@@ -156,22 +167,23 @@ void display_liu_nian(const BaZiResult& result, int start_year, int count) {
 }
 
 /**
- * @brief 显示流月信息（实现）
+ * @brief 显示流月信息（实现）- 按节气月显示
  */
 void display_liu_yue(const BaZiResult& result, int year) {
-    fmt::println("==================== {}年流月信息 ====================", year);
+    fmt::println("==================== {}年流月信息（节气月）====================", year);
     fmt::println("");
     
-    fmt::println("{:<8} {:<8} {:<8} {:<8}", 
-                 "月份", "干支", "天干十神", "地支十神");
-    fmt::println("{:-<40}", "");
+    fmt::println("{:<8} {:<8} {:<14} {:<8} {:<8}", 
+                 "月份", "干支", "起始日期", "天干十神", "地支十神");
+    fmt::println("{:-<56}", "");
     
-    for (int month = 1; month <= 12; ++month) {
-        auto liu_yue = result.get_liu_yue(year, month);
-        
-        fmt::println("{:<8} {:<8} {:<8} {:<8}",
-                     std::format("{}月", month),
+    auto liu_yue_list = result.get_liu_yue_list(year);
+    
+    for (const auto& liu_yue : liu_yue_list) {
+        fmt::println("{:<8} {:<8} {:<14} {:<8} {:<8}",
+                     std::format("{}月", liu_yue.lunar_month_index),
                      liu_yue.pillar.to_string(),
+                     liu_yue.start_date,
                      shi_shen_to_zh(liu_yue.gan_shi_shen),
                      shi_shen_to_zh(liu_yue.zhi_shi_shen));
     }
