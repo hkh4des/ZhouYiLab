@@ -82,8 +82,10 @@ public:
      * @brief 显示天地盘（图形化）
      * 
      * @param tian_di_pan 天地盘
+     * @param day_gan 日干
+     * @param day_zhi 日支
      */
-    static void display_tian_di_pan(const TianDiPan& tian_di_pan);
+    static void display_tian_di_pan(const TianDiPan& tian_di_pan, TianGan day_gan, DiZhi day_zhi);
     
     /**
      * @brief 显示四课信息

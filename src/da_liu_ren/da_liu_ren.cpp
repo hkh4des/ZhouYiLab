@@ -174,7 +174,7 @@ std::array<DiZhi, 3> SanChuan::bi_yong(const std::vector<GanZhiKe>& lessons) {
 
 // 涉害法取三传
 std::array<DiZhi, 3> SanChuan::she_hai(const std::vector<GanZhiKe>& lessons) {
-    ke_shi_.push_back("涉害");  // 标记使用涉害法
+    // 注意：不在这里添加"涉害"，而是在构造函数中根据是否调用了涉害法来设置九宗门
     
     std::vector<std::pair<GanZhiKe, int>> harm_depths;
     
@@ -634,8 +634,21 @@ SanChuan::SanChuan(const TianDiPan& tdp, const SiKe& sk)
     else {
         try {
             // 1. 先尝试贼克法（含比用、涉害）
-            jiu_zong_men = "贼克";
             result = zei_ke();
+            
+            // 根据具体的课式确定九宗门
+            // 如果ke_shi_中有涉害相关的卦（涉害卦、见机卦、察微卦、复等卦），九宗门是"涉害"
+            if (!ke_shi_.empty()) {
+                const auto& last_ke = ke_shi_.back();
+                if (last_ke == "涉害卦" || last_ke == "见机卦" || 
+                    last_ke == "察微卦" || last_ke == "复等卦") {
+                    jiu_zong_men = "涉害";
+                } else {
+                    jiu_zong_men = "贼克";
+                }
+            } else {
+                jiu_zong_men = "贼克";
+            }
         } catch (const std::exception&) {
             try {
                 // 2. 尝试遥克法

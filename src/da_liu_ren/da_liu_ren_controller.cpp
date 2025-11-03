@@ -64,7 +64,7 @@ void DaLiuRenController::display_result_detailed(const DaLiuRenResult& result) {
     fmt::print("\n");
     
     // 显示天地盘
-    display_tian_di_pan(result.tian_di_pan);
+    display_tian_di_pan(result.tian_di_pan, result.ba_zi.day.gan, result.ba_zi.day.zhi);
     
     // 显示四课
     display_si_ke(result.si_ke);
@@ -88,7 +88,7 @@ void DaLiuRenController::display_result_detailed(const DaLiuRenResult& result) {
 
 
 // 显示天地盘
-void DaLiuRenController::display_tian_di_pan(const TianDiPan& tian_di_pan) {
+void DaLiuRenController::display_tian_di_pan(const TianDiPan& tian_di_pan, TianGan day_gan, DiZhi day_zhi) {
     fmt::print("【天地盘】\n");
     
     const auto& di_pan = tian_di_pan.get_di_pan();
@@ -101,42 +101,73 @@ void DaLiuRenController::display_tian_di_pan(const TianDiPan& tian_di_pan) {
         "天空", "白虎", "太常", "玄武", "太阴", "天后"
     };
     
-    fmt::print("  ┌──────────────────────────────────────────┐\n");
-    fmt::print("  │ 地盘  │ 天盘  │ 神将                 │\n");
-    fmt::print("  ├──────────────────────────────────────────┤\n");
+    fmt::print("  ┌───────┬───────┬────────┬────────┐\n");
+    fmt::print("  │ 位置  │ 天盘  │  遁干  │  神将  │\n");
+    fmt::print("  │       │ 地盘  │        │        │\n");
+    fmt::print("  ├───────┼───────┼────────┼────────┤\n");
     
     for (int i = 0; i < 12; ++i) {
         DiZhi di = di_pan[i];
         DiZhi tian = tian_pan[i];
         
-        // 找到神将
-        std::string shen_jiang_name = "";
+        // 找到地盘的神将
+        std::string di_shen_jiang_name = "";
         for (int j = 0; j < 12; ++j) {
             if (shen_jiang[j] == di) {
-                shen_jiang_name = shen_jiang_names[j];
+                di_shen_jiang_name = shen_jiang_names[j];
                 break;
             }
         }
         
-        // 获取地支的寄干
-        auto di_ji_gan = get_ji_gan(di);
-        auto tian_ji_gan = get_ji_gan(tian);
+        // 找到天盘的神将（天盘地支在地盘上的位置）
+        std::string tian_shen_jiang_name = "";
+        for (int j = 0; j < 12; ++j) {
+            if (shen_jiang[j] == tian) {
+                tian_shen_jiang_name = shen_jiang_names[j];
+                break;
+            }
+        }
+        
+        // 地盘和天盘只显示地支
         std::string di_str = std::string(Mapper::to_zh(di));
         std::string tian_str = std::string(Mapper::to_zh(tian));
         
-        // 如果有寄干，显示第一个天干
-        if (!di_ji_gan.empty()) {
-            di_str += std::string(Mapper::to_zh(di_ji_gan[0]));
-        }
-        if (!tian_ji_gan.empty()) {
-            tian_str += std::string(Mapper::to_zh(tian_ji_gan[0]));
+        // 获取天盘地支的遁干
+        auto tian_dun_gan_opt = get_dun_gan(tian, day_gan, day_zhi);
+        std::string tian_dun_gan_str = "  ";
+        if (tian_dun_gan_opt.has_value()) {
+            tian_dun_gan_str = std::string(Mapper::to_zh(tian_dun_gan_opt.value()));
         }
         
-        fmt::print("  │ {:^5} │ {:^5} │ {:12s}         │\n",
-            di_str, tian_str, shen_jiang_name);
+        // 获取地盘地支的遁干
+        auto di_dun_gan_opt = get_dun_gan(di, day_gan, day_zhi);
+        std::string di_dun_gan_str = "  ";
+        if (di_dun_gan_opt.has_value()) {
+            di_dun_gan_str = std::string(Mapper::to_zh(di_dun_gan_opt.value()));
+        }
+        
+        // 第一行：显示地盘位置、天盘、天盘遁干、天盘神将
+        // 中文字符显示宽度为2，需要手动对齐
+        fmt::print("  │  {}   │  {}   │   {}   │  {}  │\n",
+            di_str, tian_str, tian_dun_gan_str, tian_shen_jiang_name);
+        // 第二行：显示地盘、地盘遁干、地盘神将
+        fmt::print("  │       │  {}   │   {}   │  {}  │\n", 
+            di_str, di_dun_gan_str, di_shen_jiang_name);
+        
+        // 每个位置结束后加一条分隔线
+        if (i < 11) {
+            if ((i + 1) % 4 == 0) {
+                // 每4个位置加双分隔线（更明显）
+                fmt::print("  ├───────┼───────┼────────┼────────┤\n");
+                fmt::print("  ├───────┼───────┼────────┼────────┤\n");
+            } else {
+                // 每个位置加单分隔线
+                fmt::print("  ├───────┼───────┼────────┼────────┤\n");
+            }
+        }
     }
     
-    fmt::print("  └──────────────────────────────────────────┘\n\n");
+    fmt::print("  └───────┴───────┴────────┴────────┘\n\n");
 }
 
 // 显示四课（增强版，包含阴阳属性）

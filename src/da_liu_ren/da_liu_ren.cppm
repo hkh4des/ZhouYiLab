@@ -229,7 +229,7 @@ public:
          
         // 初始化神将（从贵人开始顺布或逆布）
         int gui_ren_idx = static_cast<int>(gui_ren);
-        int step = is_clockwise ? -1 : 1;  // 修正方向：顺布用-1，逆布用1
+        int step = is_clockwise ? 1 : -1;  // 阳贵顺布（+1），阴贵逆布（-1）
         for (int i = 0; i < 12; ++i) {
             int pos = (gui_ren_idx + i * step + 12) % 12;
             shen_jiang_[i] = static_cast<DiZhi>(pos);

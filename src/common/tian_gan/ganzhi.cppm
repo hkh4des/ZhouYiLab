@@ -569,19 +569,33 @@ constexpr auto is_san_he(DiZhi zhi1, DiZhi zhi2, DiZhi zhi3) -> std::pair<bool, 
 
 /**
  * @brief 获取天干寄宫地支
+ * 
+ * 大六壬十天干寄宫口诀：
+ *   甲课寅兮乙课辰，
+ *   丙戊课巳不须论，
+ *   丁己课未庚申上，
+ *   辛戌壬亥是其真，
+ *   癸课原来丑宫坐，
+ *   分明不用四正神。
+ * 
+ * 规则：
+ *   1. 阳干（甲丙戊庚壬）寄禄位，如甲禄在寅
+ *   2. 阴干（乙丁己辛癸）寄冠带位，如乙冠带在辰
+ *   3. 丙戊同寄巳，丁己同寄未
+ *   4. 子午卯酉四正位不参与寄宫
  */
 constexpr DiZhi get_ji_gong(TianGan gan) {
     constexpr std::array<DiZhi, 10> palaces = {
-        DiZhi::Yin,    // 甲寄寅
-        DiZhi::Chen,   // 乙寄辰
-        DiZhi::Si,     // 丙寄巳
-        DiZhi::Wei,    // 丁寄未
-        DiZhi::Si,     // 戊寄巳
-        DiZhi::Wei,    // 己寄未
-        DiZhi::Shen,   // 庚寄申
-        DiZhi::Xu,     // 辛寄戌
-        DiZhi::Hai,    // 壬寄亥
-        DiZhi::Chou    // 癸寄丑
+        DiZhi::Yin,    // 甲寄寅（阳干寄禄）
+        DiZhi::Chen,   // 乙寄辰（阴干寄冠带）
+        DiZhi::Si,     // 丙寄巳（阳干寄禄）
+        DiZhi::Wei,    // 丁寄未（阴干寄冠带）
+        DiZhi::Si,     // 戊寄巳（阳干寄禄，与丙同宫）
+        DiZhi::Wei,    // 己寄未（阴干寄冠带，与丁同宫）
+        DiZhi::Shen,   // 庚寄申（阳干寄禄）
+        DiZhi::Xu,     // 辛寄戌（阴干寄冠带）
+        DiZhi::Hai,    // 壬寄亥（阳干寄禄）
+        DiZhi::Chou    // 癸寄丑（阴干寄冠带）
     };
     return palaces[static_cast<int>(gan)];
 }

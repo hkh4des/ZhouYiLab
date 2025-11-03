@@ -19,11 +19,12 @@ int main() {
         // 示例1：阳历起课
         fmt::print("【示例1】阳历起课\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-        fmt::print("起课时间：2025年6月15日 14时\n\n");
+        fmt::print("起课时间：2025年11月3日 16时\n\n");
         auto result1 = DaLiuRenController::pai_pan_solar(2025, 11, 3, 16);
         DaLiuRenController::display_result(result1);
         fmt::print("\n");
 
+        /*
         // 示例2：农历起课
         fmt::print("【示例2】农历起课\n");
         fmt::print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -38,6 +39,7 @@ int main() {
         auto result3 = DaLiuRenController::pai_pan_solar(2025, 6, 15, 14);
         DaLiuRenController::display_result_detailed(result3);
         fmt::print("\n");
+        */
 
         // 示例4：查看四课和三传
         fmt::print("【示例4】查看四课和三传\n");
@@ -47,7 +49,7 @@ int main() {
         fmt::print("\n");
         DaLiuRenController::display_san_chuan(result4.san_chuan, result4.ba_zi.day.gan, result4.ba_zi.day.zhi);
         fmt::print("\n");
-
+        DaLiuRenController::display_result_detailed(result4);
     } catch (const std::exception& e) {
         fmt::print("❌ 错误：{}\n", e.what());
         return 1;
