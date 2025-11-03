@@ -427,18 +427,67 @@ std::array<DiZhi, 3> SanChuan::fu_yin() {
         throw std::runtime_error("第一课不是干支课，无法判断伏吟");
     }
     
-    if (si_ke_.first.gan == TianGan::Gui) {
-        // 六癸日
-        chu_chuan_ = tian_di_pan_[DiZhi::Chou];
-        zhong_chuan_ = DiZhi::Xu;
-        mo_chuan_ = DiZhi::Wei;
-        ke_shi_.push_back(si_ke_.first.is_yang() ? "自任卦-伏吟-六癸日" : "自信卦-伏吟-六癸日");
-    } else if (si_ke_.first.gan == TianGan::Yi) {
-        // 六乙日
-        chu_chuan_ = DiZhi::Chen;
-        zhong_chuan_ = si_ke_.zhi_yang_shen;
-        
-        // 查找中传的刑神
+    bool is_yang_ri = si_ke_.first.is_yang();
+    
+    // 1. 优先检查四课中是否有克，有克取克发用
+    auto conquerors = have_conquerors(); // 下贼上
+    auto overcomes = have_overcomes();   // 上克下
+    
+    if (!conquerors.empty()) {
+        // 有下贼上，取日干寄宫地支作为初传
+        TianGan day_gan = si_ke_.first.gan;
+        chu_chuan_ = get_ji_gong(day_gan);
+        ke_shi_.push_back("不虞卦");
+    } else if (!overcomes.empty()) {
+        // 有上克下，取上克的地支位置作为初传
+        chu_chuan_ = overcomes[0].upper_zhi;
+        ke_shi_.push_back("不虞卦");
+    } else {
+        // 2. 无克时按阴阳取发用
+        if (is_yang_ri) {
+            // 阳日取干上神
+            chu_chuan_ = si_ke_.gan_yang_shen;
+            ke_shi_.push_back("自任卦");
+        } else {
+            // 阴日取支上神
+            chu_chuan_ = si_ke_.zhi_yang_shen;
+            ke_shi_.push_back("自信卦");
+        }
+    }
+    
+    // 3. 计算中传：取初传相刑的支为中传
+    // 自刑之神：辰、午、酉、亥
+    bool chu_zi_xing = (chu_chuan_ == DiZhi::Chen || chu_chuan_ == DiZhi::Wu || 
+                        chu_chuan_ == DiZhi::You || chu_chuan_ == DiZhi::Hai);
+    
+    if (chu_zi_xing) {
+        // 初传是自刑神，阳日取干上神，阴日取支上神
+        if (is_yang_ri) {
+            zhong_chuan_ = si_ke_.gan_yang_shen;
+        } else {
+            zhong_chuan_ = si_ke_.zhi_yang_shen;
+        }
+    } else {
+        // 初传不是自刑神，正常取刑
+        zhong_chuan_ = chu_chuan_;
+        for (int i = 0; i < 12; ++i) {
+            DiZhi candidate = static_cast<DiZhi>(i);
+            if (is_xing(chu_chuan_, candidate)) {
+                zhong_chuan_ = candidate;
+                break;
+            }
+        }
+    }
+    
+    // 4. 计算末传：取中传相刑的支为末传
+    bool zhong_zi_xing = (zhong_chuan_ == DiZhi::Chen || zhong_chuan_ == DiZhi::Wu || 
+                          zhong_chuan_ == DiZhi::You || zhong_chuan_ == DiZhi::Hai);
+    
+    if (zhong_zi_xing) {
+        // 中传是自刑神，取中传所冲为末传
+        mo_chuan_ = zhong_chuan_ + 6;
+    } else {
+        // 中传不是自刑神，正常取刑
         mo_chuan_ = zhong_chuan_;
         for (int i = 0; i < 12; ++i) {
             DiZhi candidate = static_cast<DiZhi>(i);
@@ -446,85 +495,6 @@ std::array<DiZhi, 3> SanChuan::fu_yin() {
                 mo_chuan_ = candidate;
                 break;
             }
-        }
-        
-        // 中传自刑，则以中传冲位为末传
-        if (mo_chuan_ == zhong_chuan_) {
-            mo_chuan_ = zhong_chuan_ + 6;
-        }
-        
-        ke_shi_.push_back(si_ke_.first.is_yang() ? "自任卦-伏吟-六乙日" : "自信卦-伏吟-六乙日");
-    } else {
-        if (si_ke_.first.is_yang()) {
-            // 刚日
-            chu_chuan_ = si_ke_.gan_yang_shen;
-            
-            // 查找初传的刑神
-            zhong_chuan_ = chu_chuan_;
-            for (int i = 0; i < 12; ++i) {
-                DiZhi candidate = static_cast<DiZhi>(i);
-                if (is_xing(chu_chuan_, candidate)) {
-                    zhong_chuan_ = candidate;
-                    break;
-                }
-            }
-            
-            // 初传自刑，则以日支支上神为中传
-            if (zhong_chuan_ == chu_chuan_) {
-                zhong_chuan_ = si_ke_.zhi_yang_shen;
-            }
-            
-            // 查找中传的刑神
-            mo_chuan_ = zhong_chuan_;
-            for (int i = 0; i < 12; ++i) {
-                DiZhi candidate = static_cast<DiZhi>(i);
-                if (is_xing(zhong_chuan_, candidate)) {
-                    mo_chuan_ = candidate;
-                    break;
-                }
-            }
-            
-            // 中传自刑，则以中传冲位为末传
-            if (mo_chuan_ == zhong_chuan_) {
-                mo_chuan_ = zhong_chuan_ + 6;
-            }
-            
-            ke_shi_.push_back("自任卦-伏吟-刚日");
-        } else {
-            // 柔日
-            chu_chuan_ = si_ke_.zhi_yang_shen;
-            
-            // 查找初传的刑神
-            zhong_chuan_ = chu_chuan_;
-            for (int i = 0; i < 12; ++i) {
-                DiZhi candidate = static_cast<DiZhi>(i);
-                if (is_xing(chu_chuan_, candidate)) {
-                    zhong_chuan_ = candidate;
-                    break;
-                }
-            }
-            
-            // 初传自刑，则以干上神为中传
-            if (zhong_chuan_ == chu_chuan_) {
-                zhong_chuan_ = si_ke_.gan_yang_shen;
-            }
-            
-            // 查找刑神作为末传
-            mo_chuan_ = zhong_chuan_;
-            for (int i = 0; i < 12; ++i) {
-                DiZhi candidate = static_cast<DiZhi>(i);
-                if (is_xing(zhong_chuan_, candidate)) {
-                    mo_chuan_ = candidate;
-                    break;
-                }
-            }
-            
-            // 末传自刑，则以末传冲位为末传
-            if (mo_chuan_ == zhong_chuan_) {
-                mo_chuan_ = zhong_chuan_ + 6;
-            }
-            
-            ke_shi_.push_back("自信卦-伏吟-柔日");
         }
     }
     
@@ -592,13 +562,15 @@ bool SanChuan::is_ba_zhuan_day(const GanZhiKe& ke) const {
 
 // 判断是否为伏吟课
 bool SanChuan::is_fu_yin_lesson() const {
+    // 伏吟课判断：天盘与地盘相同的位置数量>=6个
+    int fu_yin_count = 0;
     for (int i = 0; i < 12; ++i) {
         DiZhi current = static_cast<DiZhi>(i);
-        if (tian_di_pan_[current] != current) {
-            return false;
+        if (tian_di_pan_[current] == current) {
+            fu_yin_count++;
         }
     }
-    return true;
+    return fu_yin_count >= 6;
 }
 
 // 判断是否为返吟课
