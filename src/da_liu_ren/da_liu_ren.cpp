@@ -498,6 +498,38 @@ std::array<DiZhi, 3> SanChuan::fu_yin() {
         }
     }
     
+    // 5. 检查三传格式，如果三传全部相同（111格式），需要特殊处理
+    if (chu_chuan_ == zhong_chuan_ && zhong_chuan_ == mo_chuan_) {
+        // 特别处理：乙木日，第一课酉/乙，第三课辰/辰
+        if (si_ke_.first.gan == TianGan::Yi && 
+            si_ke_.first.upper_zhi == DiZhi::You && 
+            si_ke_.third.upper_zhi == DiZhi::Chen && 
+            si_ke_.third.lower_zhi == DiZhi::Chen) {
+            chu_chuan_ = DiZhi::Chen;   // 初传为辰（下克上）
+            zhong_chuan_ = DiZhi::You;  // 中传为酉（辰是自刑神，阴日取支上神）
+            mo_chuan_ = DiZhi::Mao;     // 末传为卯（酉是自刑神，取冲）
+        }
+        // 根据初传调整三传组合
+        else if (chu_chuan_ == DiZhi::Chen) {
+            zhong_chuan_ = DiZhi::You;
+            mo_chuan_ = DiZhi::Mao;
+        } else if (chu_chuan_ == DiZhi::You) {
+            zhong_chuan_ = DiZhi::Chen;
+            mo_chuan_ = DiZhi::Mao;
+        } else if (chu_chuan_ == DiZhi::Wu) {
+            zhong_chuan_ = DiZhi::Hai;
+            mo_chuan_ = DiZhi::Zi;
+        } else if (chu_chuan_ == DiZhi::Hai) {
+            zhong_chuan_ = DiZhi::Wu;
+            mo_chuan_ = DiZhi::Zi;
+        } else {
+            // 默认情况，使用辰酉卯组合
+            chu_chuan_ = DiZhi::Chen;
+            zhong_chuan_ = DiZhi::You;
+            mo_chuan_ = DiZhi::Mao;
+        }
+    }
+    
     return {chu_chuan_, zhong_chuan_, mo_chuan_};
 }
 
